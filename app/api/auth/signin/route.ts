@@ -1,0 +1,2 @@
+import { NextResponse } from "next/server"; import { createClient } from "@/lib/supabase/server";
+export async function POST(request: Request) { const form = await request.formData(); const email = String(form.get("email") || ""), password = String(form.get("password") || ""); const supabase = await createClient(); const { error } = await supabase.auth.signInWithPassword({ email, password }); return NextResponse.redirect(new URL(error ? "/login?error=Invalid%20email%20or%20password" : "/dashboard", request.url), { status: 303 }); }

@@ -1,0 +1,5 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer base { * { @apply border-zinc-200; } body { @apply bg-[#fafafa] text-zinc-950 antialiased; } }
+@layer components { .shell { @apply mx-auto max-w-6xl px-5 sm:px-8; } .button { @apply inline-flex items-center justify-center rounded-full bg-zinc-950 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:opacity-40; } .button-secondary { @apply inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-5 py-2.5 text-sm font-medium transition hover:bg-zinc-100; } .label { @apply mb-1.5 block text-sm font-medium text-zinc-700; } .input { @apply w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-3 text-sm outline-none transition focus:border-zinc-950; } .panel { @apply rounded-2xl border bg-white p-5 sm:p-6; } }

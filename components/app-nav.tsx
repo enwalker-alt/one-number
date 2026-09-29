@@ -1,0 +1,2 @@
+import Link from "next/link"; import { Logo } from "@/components/logo";
+export function AppNav() { return <header className="border-b bg-white"><div className="shell flex h-16 items-center justify-between"><Logo/><nav className="hidden gap-5 text-sm text-zinc-600 sm:flex"><Link href="/dashboard">Overview</Link><Link href="/dashboard#contacts">Contacts</Link><Link href="/settings">Settings</Link></nav><form action="/api/auth/signout" method="post"><button className="text-sm text-zinc-600 hover:text-zinc-950">Sign out</button></form></div></header>; }
