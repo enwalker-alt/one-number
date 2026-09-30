@@ -14,7 +14,9 @@ export async function POST(request: Request) {
   const signature = request.headers.get("x-twilio-signature");
 
   // Temporary compatibility for Twilio's free-trial inbound tester,
-  // which is reaching this endpoint without X-Twilio-Signature.
+  // which is reaching this endpoint without X-Twilio-Signature. Remove this
+  // exception when this is moved to a normal production Twilio number.
+  // It intentionally remains limited to this account's AccountSid.
   const isUnsignedTrialRequest =
     !signature &&
     Boolean(process.env.TWILIO_ACCOUNT_SID) &&

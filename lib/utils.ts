@@ -19,7 +19,33 @@ export function decrypt(value: string) {
   const raw = Buffer.from(value, "base64url"), key = crypto.createHash("sha256").update(process.env.TOKEN_ENCRYPTION_KEY || "development-only-secret").digest();
   const decipher = crypto.createDecipheriv("aes-256-gcm", key, raw.subarray(0, 12)); decipher.setAuthTag(raw.subarray(12, 28)); return Buffer.concat([decipher.update(raw.subarray(28)), decipher.final()]).toString("utf8");
 }
-export function isAffirmative(value: string) { return /\b(yes|yeah|yep|send it|correct|go ahead|that'?s right|do it|sure)\b/i.test(value); }
-export function isNegative(value: string) { return /\b(no|cancel|never mind|don'?t send|do not send|stop)\b/i.test(value); }
+/** Normalizes a short voice response before comparing it to control phrases. */
+export function normalizeVoiceResponse(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[’‘]/g, "'")
+    .replace(/[^a-z0-9'\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+const affirmativeResponses = new Set([
+  "yes", "yeah", "yep", "sure", "do it", "send it", "go ahead",
+  "sounds good", "correct", "that's right", "thats right", "please do",
+]);
+const negativeResponses = new Set([
+  "no", "nope", "nah", "don't", "dont", "do not", "cancel", "never mind",
+  "nevermind", "that's all", "thats all", "i'm good", "im good", "nothing else",
+  "i'm done", "im done", "all good", "that's it", "thats it", "no thanks", "no thank you",
+]);
+
+export function isAffirmative(value: string) {
+  return affirmativeResponses.has(normalizeVoiceResponse(value));
+}
+
+export function isNegative(value: string) {
+  const response = normalizeVoiceResponse(value);
+  return negativeResponses.has(response) || response.startsWith("no ") || response.startsWith("cancel ");
+}
 export function escapeXml(text: string) { return text.replace(/[<>&'\"]/g, (c) => ({"<":"&lt;",">":"&gt;","&":"&amp;","'":"&apos;","\"":"&quot;"})[c] || c); }
 export function twiml(body: string) { return new Response(`<?xml version="1.0" encoding="UTF-8"?><Response>${body}</Response>`, { headers: { "Content-Type": "text/xml" } }); }

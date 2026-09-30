@@ -7,7 +7,9 @@
 - Supabase email/password authentication, profiles, contacts, activity, and persistent call sessions
 - Google OAuth limited to `https://www.googleapis.com/auth/gmail.send`
 - Encrypted-at-rest Gmail tokens (application-layer AES-256-GCM, using `TOKEN_ENCRYPTION_KEY`)
-- Twilio programmable voice using `<Gather>` for DTMF PIN and speech turns
+- Twilio programmable voice using fast `<Gather>` turns: four-digit DTMF PINs,
+  `googlev2_telephony` speech recognition, persisted draft state, saved-contact
+  hints, and explicit confirmation before Gmail delivery
 - OpenAI structured intent parsing, server-side Zod validation, and a deterministic confirmation gate
 - Dashboard, onboarding, Gmail connect/disconnect, and contact CRUD
 
