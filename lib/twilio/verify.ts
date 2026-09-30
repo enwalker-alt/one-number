@@ -10,77 +10,35 @@ export function verifyTwilio(
   const expectedAccountSid = process.env.TWILIO_ACCOUNT_SID?.trim();
   const signature = request.headers.get("x-twilio-signature");
 
+  // Twilio Console trial inbound flow is reaching us without
+  // X-Twilio-Signature. Permit it only while explicitly in trial mode
+  // and only when the posted AccountSid matches this Twilio account.
+  if (
+    process.env.TWILIO_TRIAL_MODE === "true" &&
+    !signature &&
+    expectedAccountSid &&
+    form.AccountSid === expectedAccountSid
+  ) {
+    return true;
+  }
+
+  if (!token || !signature) {
+    return false;
+  }
+
   const incomingUrl = new URL(request.url);
 
-  const configuredBase = process.env.NEXT_PUBLIC_APP_URL
-    ?.trim()
-    .replace(/\/+$/, "");
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/+$/, "") ??
+    incomingUrl.origin;
 
-  const forwardedHost = request.headers
-    .get("x-forwarded-host")
-    ?.split(",")[0]
-    ?.trim();
+  const validationUrl =
+    `${baseUrl}${incomingUrl.pathname}${incomingUrl.search}`;
 
-  const forwardedProto = request.headers
-    .get("x-forwarded-proto")
-    ?.split(",")[0]
-    ?.trim();
-
-  const host = request.headers.get("host");
-
-  const candidates = new Set<string>();
-
-  candidates.add(request.url);
-
-  if (configuredBase) {
-    candidates.add(
-      `${configuredBase}${incomingUrl.pathname}${incomingUrl.search}`
-    );
-  }
-
-  if (host) {
-    candidates.add(
-      `https://${host}${incomingUrl.pathname}${incomingUrl.search}`
-    );
-  }
-
-  if (forwardedHost) {
-    candidates.add(
-      `${forwardedProto || "https"}://${forwardedHost}${incomingUrl.pathname}${incomingUrl.search}`
-    );
-  }
-
-  const results =
-    token && signature
-      ? [...candidates].map((url) => ({
-          url,
-          valid: twilio.validateRequest(token, signature, url, form),
-        }))
-      : [];
-
-  const valid = results.some((result) => result.valid);
-
-  if (!valid) {
-    console.error(
-      "TWILIO_VERIFY_DEBUG",
-      JSON.stringify({
-        signaturePresent: Boolean(signature),
-        authTokenPresent: Boolean(token),
-        envAccountSidPresent: Boolean(expectedAccountSid),
-        postedAccountSidPresent: Boolean(form.AccountSid),
-        accountSidMatches:
-          Boolean(expectedAccountSid) &&
-          Boolean(form.AccountSid) &&
-          expectedAccountSid === form.AccountSid,
-        requestUrl: request.url,
-        host,
-        forwardedHost,
-        forwardedProto,
-        candidates: results,
-        formKeys: Object.keys(form).sort(),
-      })
-    );
-  }
-
-  return valid;
+  return twilio.validateRequest(
+    token,
+    signature,
+    validationUrl,
+    form
+  );
 }
